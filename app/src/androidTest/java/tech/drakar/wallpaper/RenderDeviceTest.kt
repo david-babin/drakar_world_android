@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * End to end on a device: connects to drakar.tech, receives the world, downloads the Earth data, renders a frame
+ * End to end on a device: connects to world.drakar.tech, receives the world, downloads the Earth data, renders a frame
  * offscreen with the wallpaper's renderer, and saves it (Download/drakar-render.png) for a look.
  */
 @RunWith(AndroidJUnit4::class)

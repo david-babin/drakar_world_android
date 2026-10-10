@@ -1,6 +1,6 @@
 # drakar · Android live wallpaper
 
-The [drakar.tech](https://drakar.tech) world as a live wallpaper: the shared globe drawn natively (OpenGL ES 3),
+The [world.drakar.tech](https://world.drakar.tech) world as a live wallpaper: the shared globe drawn natively (OpenGL ES 3),
 connected to the same server as the page, and — if you allow it — computing work units with the server's own
 engine. The protocol is the contract: [`drakar_tech/docs/protocol.md`](https://github.com/david-babin/drakar_tech/blob/main/docs/protocol.md).
 
@@ -52,7 +52,7 @@ app/src/main/java/tech/drakar/wallpaper/
 - **apk** — unit tests (world model against fixtures produced by the server's library, Earth data parsers), the
   APK, and the `latest` release on `main`.
 - **device** — on an emulator: `EngineDeviceTest` runs `engine.js` in the JavaScript sandbox on units produced by
-  the server's library and checks the hashes; `RenderDeviceTest` connects to drakar.tech, renders a live frame
+  the server's library and checks the hashes; `RenderDeviceTest` connects to world.drakar.tech, renders a live frame
   offscreen with the wallpaper's renderer and the frame is pushed to the `ci-screens` branch.
 
 Test fixtures come from `drakar_tech` (`src/lib`, `public/engine.js`): regenerate them when the rules change.

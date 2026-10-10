@@ -17,7 +17,7 @@ android {
         versionCode = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
         versionName = "0.1.$versionCode"
         buildConfigField("String", "COMMIT", "\"$commit\"")
-        buildConfigField("String", "SITE", "\"https://drakar.tech\"")
+        buildConfigField("String", "SITE", "\"https://world.drakar.tech\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
