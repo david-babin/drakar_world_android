@@ -11,23 +11,24 @@ jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
-      - name: Unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest
-      - name: APK
-        run: ./gradlew --no-daemon assembleRelease
-      - uses: actions/upload-artifact@v4
-        with:
-          name: drakar-${{ github.run_number }}
-          path: app/build/outputs/apk/release/*.apk
-          retention-days: 30
-      # main: the APK is also published as the rolling "latest" release (direct download from the phone)
+      # the runner image ships the Android SDK (ANDROID_HOME); missing platforms are fetched by the build
+      - name: Unit tests and APK
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon testDebugUnitTest assembleRelease 2>&1 | tee build.log
+      # build errors as one annotation (readable from the run summary and the API)
+      - name: Report errors
+        if: failure()
+        run: |
+          msg=$(grep -E "^e: |error:|What went wrong|FAILED|Exception|expected:|> " build.log | head -60 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')
+          echo "::error title=build::${msg}"
+      # main: the APK is published as the rolling "latest" release (direct download from the phone)
       - name: Release
         if: github.ref == 'refs/heads/main'
         env:
@@ -38,7 +39,7 @@ jobs:
           gh release create latest drakar.apk --prerelease --target "$GITHUB_SHA" \
             --title "drakar · build ${{ github.run_number }}" --notes "Commit ${GITHUB_SHA::7}. Install drakar.apk on the phone, then set it as the live wallpaper."
       - uses: actions/upload-artifact@v4
-        if: failure()
         with:
-          name: reports
-          path: app/build/reports
+          name: drakar-${{ github.run_number }}
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
