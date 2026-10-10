@@ -26,7 +26,7 @@ jobs:
       - name: Report errors
         if: failure()
         run: |
-          msg=$(grep -E "^e: |error:|What went wrong|FAILED|Exception|expected:|> " build.log | head -60 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')
+          msg=$(grep -E "^e: |^w: .*deprecat|error:|What went wrong|FAILED|Exception|expected:|^   > " build.log | grep -v "^> Task"  | head -60 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')
           echo "::error title=build::${msg}"
       # main: the APK is published as the rolling "latest" release (direct download from the phone)
       - name: Release

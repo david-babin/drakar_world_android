@@ -284,7 +284,8 @@ class GlobeRenderer(
             textW = (max(brand.measureText("drakar.tech"), small.measureText(yt)) + 4 * density).toInt()
             textH = (48 * density).toInt()
             val bmp = Bitmap.createBitmap(textW, textH, Bitmap.Config.ARGB_8888)
-            Canvas(bmp).apply { drawText("drakar.tech", 0f, 24 * density, brand); drawText(yt, 0f, 44 * density, small) }
+            val dp = density                                     // (inside Canvas.apply, `density` would be the canvas's)
+            Canvas(bmp).apply { drawText("drakar.tech", 0f, 24 * dp, brand); drawText(yt, 0f, 44 * dp, small) }
             glBindTexture(GL_TEXTURE_2D, texText); texParams(GL_LINEAR, GL_CLAMP_TO_EDGE)
             GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0); bmp.recycle()
         }
