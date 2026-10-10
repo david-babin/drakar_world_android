@@ -8,7 +8,8 @@ engine. The protocol is the contract: [`drakar_tech/docs/protocol.md`](https://g
 
 Every push to `main` builds the APK and publishes it as the **latest** release
 (`Releases → latest → drakar.apk`). Open it on the phone, allow the install, then in the app tap
-**Set as wallpaper**. Signed with a debug key: sideloading only.
+**Set as wallpaper**. Every build is signed with the same sideload key (`signing/`), so a new build installs over
+the previous one; a store release would need a private key kept out of the repository.
 
 ## What it does
 
@@ -46,5 +47,12 @@ app/src/main/java/tech/drakar/wallpaper/
 
 ## Build
 
-`./gradlew assembleRelease` (JDK 17, Android SDK 36). CI: `.github/workflows/build.yml` runs the unit tests
-(world model against fixtures produced by the server's library, Earth data parsers) and builds the APK.
+`./gradlew assembleRelease` (JDK 17, Android SDK 36). CI (`.github/workflows/build.yml`):
+
+- **apk** — unit tests (world model against fixtures produced by the server's library, Earth data parsers), the
+  APK, and the `latest` release on `main`.
+- **device** — on an emulator: `EngineDeviceTest` runs `engine.js` in the JavaScript sandbox on units produced by
+  the server's library and checks the hashes; `RenderDeviceTest` connects to drakar.tech, renders a live frame
+  offscreen with the wallpaper's renderer and the frame is pushed to the `ci-screens` branch.
+
+Test fixtures come from `drakar_tech` (`src/lib`, `public/engine.js`): regenerate them when the rules change.

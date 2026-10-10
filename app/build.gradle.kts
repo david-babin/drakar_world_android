@@ -21,12 +21,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // one fixed key for every build (sideloading: a new build installs over the previous one).
+    // Not a secret: a store release would use a private key kept out of the repository.
+    signingConfigs {
+        create("sideload") {
+            storeFile = rootProject.file("signing/sideload.jks")
+            storePassword = "drakar-sideload"; keyAlias = "drakar"; keyPassword = "drakar-sideload"
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
-            // signed with the debug key for sideloading; a real key comes with a store release
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("sideload")
         }
+        debug { signingConfig = signingConfigs.getByName("sideload") }
     }
     buildFeatures { buildConfig = true }
     compileOptions {
