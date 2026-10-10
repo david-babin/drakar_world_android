@@ -1,22 +1,29 @@
 name: build
 on:
   push:
+    paths-ignore: ['**.md']
   pull_request:
+    paths-ignore: ['**.md']
   workflow_dispatch:
 
 permissions:
   contents: write
 
+# a newer push supersedes a running build; main is never cancelled (its release step must not stop halfway)
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
       # the runner image ships the Android SDK (ANDROID_HOME); missing platforms are fetched by the build
       - name: Unit tests and APK
         run: |
@@ -38,18 +45,17 @@ jobs:
           gh release delete latest --yes --cleanup-tag || true
           gh release create latest drakar.apk --prerelease --target "$GITHUB_SHA" \
             --title "drakar · build ${{ github.run_number }}" --notes "Commit ${GITHUB_SHA::7}. Install drakar.apk on the phone, then set it as the live wallpaper."
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: drakar-${{ github.run_number }}
           path: app/build/outputs/apk/release/*.apk
           retention-days: 30
 
   # on an emulator: the engine against the server's hashes, and a live frame of the world (pushed to the
-  # ci-screens branch to be looked at)
+  # ci-screens branch to be looked at). Runs alongside the apk job: the release does not wait for it.
   device:
-    needs: apk
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
@@ -57,18 +63,40 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      # the emulator boots from a cached snapshot instead of cold-booting on every run
+      - name: AVD cache
+        uses: actions/cache@v5
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34-google_apis-x86_64
+      - name: Create the AVD snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "AVD snapshot created for the cache."
       - name: Device tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           # (one line: the runner executes each line of the script on its own)
           script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb shell ls -la /sdcard/Download/ > downloads.txt 2>&1; adb pull /sdcard/Download/drakar-render.png render.png >> downloads.txt 2>&1; adb pull /sdcard/Download/drakar-settings.png settings.png >> downloads.txt 2>&1; exit $s
       - name: Report errors
