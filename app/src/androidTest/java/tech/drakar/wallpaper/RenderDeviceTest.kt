@@ -12,13 +12,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import tech.drakar.wallpaper.render.GlobeRenderer
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
  * End to end on a device: connects to drakar.tech, receives the world, downloads the Earth data, renders a frame
- * offscreen with the wallpaper's renderer, and saves it (files/render.png) for a look.
+ * offscreen with the wallpaper's renderer, and saves it (Download/drakar-render.png) for a look.
  */
 @RunWith(AndroidJUnit4::class)
 class RenderDeviceTest {
@@ -52,7 +51,15 @@ class RenderDeviceTest {
         GLES30.glReadPixels(0, 0, w, h, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf)
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); buf.position(0); bmp.copyPixelsFromBuffer(buf)
         val flipped = Bitmap.createBitmap(bmp, 0, 0, w, h, android.graphics.Matrix().apply { preScale(1f, -1f) }, false)
-        File(ctx.getExternalFilesDir(null), "render.png").outputStream().use { flipped.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        // saved in Downloads (kept after the test APKs are uninstalled), pulled by CI
+        val values = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "drakar-render.png")
+            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Download")
+        }
+        ctx.contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)?.let { uri ->
+            ctx.contentResolver.openOutputStream(uri)?.use { flipped.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
 
         // the globe is drawn: the centre is not the background colour
         val c = flipped.getPixel(w / 2, h / 2)

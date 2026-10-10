@@ -70,7 +70,7 @@ jobs:
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           # (one line: the runner executes each line of the script on its own)
-          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb pull /sdcard/Android/data/tech.drakar.wallpaper/files/render.png render.png; exit $s
+          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb pull /sdcard/Download/drakar-render.png render.png; exit $s
       - name: Report errors
         if: failure()
         run: |
