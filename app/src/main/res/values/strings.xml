@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">drakar</string>
+    <string name="wallpaper_description">One world. It only moves forward while someone is watching.</string>
+    <string name="set_wallpaper">Set as wallpaper</string>
+    <string name="witness">Witness</string>
+    <string name="compute_visible">Compute while the wallpaper is visible (one unit a minute)</string>
+    <string name="compute_charging">Compute on the charger, on Wi-Fi (also screen off)</string>
+    <string name="engine_unsupported">This device cannot run the compute engine: the wallpaper will only watch.</string>
+    <string name="units_done">Units computed: %1$d</string>
+    <string name="status_connected">Connected · year %1$s · %2$d online</string>
+    <string name="status_idle">Not connected (the wallpaper connects while it is visible)</string>
+    <string name="version">Version %1$s</string>
+    <string name="year">Year %1$s</string>
+</resources>

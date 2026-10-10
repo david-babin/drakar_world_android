@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wallpaper_description">Un monde. Il n\'avance que si quelqu\'un le regarde.</string>
+    <string name="set_wallpaper">Définir comme fond d\'écran</string>
+    <string name="witness">Témoin</string>
+    <string name="compute_visible">Calculer quand le fond d\'écran est visible (un calcul par minute)</string>
+    <string name="compute_charging">Calculer sur le chargeur, en Wi-Fi (même écran éteint)</string>
+    <string name="engine_unsupported">Cet appareil ne peut pas exécuter le moteur de calcul : le fond d\'écran se contentera de regarder.</string>
+    <string name="units_done">Calculs effectués : %1$d</string>
+    <string name="status_connected">Connecté · an %1$s · %2$d en ligne</string>
+    <string name="status_idle">Non connecté (le fond d\'écran se connecte quand il est visible)</string>
+    <string name="version">Version %1$s</string>
+    <string name="year">An %1$s</string>
+</resources>

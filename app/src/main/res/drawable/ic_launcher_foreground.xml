@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the site's globe icon (icon.svg), centred in the adaptive-icon safe zone -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,32 A22,22 0 1,1 53.99,32 Z"
+        android:strokeWidth="2.1"
+        android:strokeColor="#C9C2B2" />
+    <path
+        android:pathData="M54,32 A9.26,22 0 1,1 53.99,32 Z"
+        android:strokeAlpha="0.7"
+        android:strokeWidth="2.1"
+        android:strokeColor="#C9C2B2" />
+    <path
+        android:pathData="M32,54 L76,54 M36.1,43.6 L71.9,43.6 M36.1,64.4 L71.9,64.4"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="2.1"
+        android:strokeColor="#C9C2B2" />
+    <path
+        android:fillColor="#D9A85C"
+        android:pathData="M63.26,47.05 m-4.17,0 a4.17,4.17 0 1,0 8.34,0 a4.17,4.17 0 1,0 -8.34,0" />
+</vector>
