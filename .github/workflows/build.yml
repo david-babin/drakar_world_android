@@ -70,7 +70,7 @@ jobs:
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           # (one line: the runner executes each line of the script on its own)
-          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb pull /sdcard/Download/drakar-render.png render.png; exit $s
+          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb shell ls -la /sdcard/Download/ > downloads.txt 2>&1; adb pull /sdcard/Download/drakar-render.png render.png >> downloads.txt 2>&1; exit $s
       - name: Report errors
         if: failure()
         run: |
@@ -79,6 +79,7 @@ jobs:
       - name: Publish the frame
         if: always()
         run: |
+          echo "::notice title=frame::$(cat downloads.txt 2>/dev/null | tr '\n' ' ') · $(ls -la render.png 2>&1)"
           [ -f render.png ] || exit 0
           git config user.name "drakar-ci"; git config user.email "ci@drakar.tech"
           git fetch origin ci-screens || true
