@@ -36,6 +36,7 @@ object Hub {
         if (initialized) return
         initialized = true
         app = context.applicationContext
+        Charte.load(app)
         prefs = Prefs(app); world = WorldModel()
         val http = Assets.client()
         assets = Assets(app, http)

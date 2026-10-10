@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- charte graphique drakar, theme nuit (see Charte.kt) -->
 <resources>
-    <color name="ink">#C9C2B2</color>
+    <color name="ink">#ECEBE6</color>
     <color name="bg">#07090C</color>
+    <color name="icon_bg">#141A22</color>
 </resources>

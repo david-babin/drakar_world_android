@@ -70,7 +70,7 @@ jobs:
           arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           # (one line: the runner executes each line of the script on its own)
-          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb shell ls -la /sdcard/Download/ > downloads.txt 2>&1; adb pull /sdcard/Download/drakar-render.png render.png >> downloads.txt 2>&1; exit $s
+          script: ./gradlew --no-daemon connectedDebugAndroidTest > device.log 2>&1; s=$?; adb shell ls -la /sdcard/Download/ > downloads.txt 2>&1; adb pull /sdcard/Download/drakar-render.png render.png >> downloads.txt 2>&1; adb pull /sdcard/Download/drakar-settings.png settings.png >> downloads.txt 2>&1; exit $s
       - name: Report errors
         if: failure()
         run: |
@@ -83,5 +83,5 @@ jobs:
           [ -f render.png ] || exit 0
           git config user.name "drakar-ci"; git config user.email "ci@drakar.tech"
           git fetch origin ci-screens || true
-          git checkout --orphan screens && git rm -rfq . && cp render.png "render-${GITHUB_RUN_NUMBER}.png" && cp render.png render.png.latest || true
-          git add render-*.png && git commit -qm "frame of build ${GITHUB_RUN_NUMBER}" && git push -f origin HEAD:ci-screens
+          git checkout --orphan screens && git rm -rfq . && cp render.png "render-${GITHUB_RUN_NUMBER}.png" && { [ ! -f settings.png ] || cp settings.png "settings-${GITHUB_RUN_NUMBER}.png"; } || true
+          git add render-*.png settings-*.png 2>/dev/null; git add render-*.png && git commit -qm "frame of build ${GITHUB_RUN_NUMBER}" && git push -f origin HEAD:ci-screens

@@ -3,7 +3,7 @@ package tech.drakar.wallpaper.render
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Typeface
+import tech.drakar.wallpaper.Charte
 import android.opengl.GLES30.*
 import android.opengl.GLUtils
 import tech.drakar.wallpaper.Config
@@ -113,8 +113,8 @@ class GlobeRenderer(
         texParams(GL_NEAREST, GL_CLAMP_TO_EDGE)
         GLUtils.texImage2D(GL_TEXTURE_2D, 0, e.base, 0)
         buildMask(e.rings)
-        for (lv in 0 until 5) staticLines += staticSet(e.contours.filter { it.level == lv }, floatArrayOf(0.79f, 0.76f, 0.70f, 0.10f + lv * 0.05f), 0.8f)
-        staticLines += staticSet(e.coasts, floatArrayOf(0.79f, 0.76f, 0.70f, 0.55f), 1.2f)
+        for (lv in 0 until 5) staticLines += staticSet(e.contours.filter { it.level == lv }, floatArrayOf(Charte.GL_INK[0], Charte.GL_INK[1], Charte.GL_INK[2], 0.08f + lv * 0.04f), 0.8f)
+        staticLines += staticSet(e.coasts, floatArrayOf(Charte.GL_INK[0], Charte.GL_INK[1], Charte.GL_INK[2], 0.34f), 1.2f)
         texText = genTexture()
         ready = true
     }
@@ -206,7 +206,8 @@ class GlobeRenderer(
         for (r in f.routes) {
             val a = byId[r.a] ?: continue; val b = byId[r.b] ?: continue
             val age = min(1f, (tickNow - r.tick) / 600f)
-            val c = hsl(f.hues.getOrElse(r.lin) { 0 }.toFloat(), 0.45f, 0.70f, 0.18f + 0.3f * age)
+            // recent routes in brass, the others in slate
+            val c = if (age < 1f) rgba(Charte.GL_BRASS, 0.65f - 0.35f * age) else rgba(Charte.GL_SLATE, 0.38f)
             val pts = geodesic(cell(a.x.toFloat(), a.y.toFloat()), cell(b.x.toFloat(), b.y.toFloat()), if (r.sea) 2 else 1)
             for (i in 0 until pts.size - 1) if (!r.sea || i % 2 == 0) seg(pts[i], pts[i + 1], c)
         }
@@ -218,27 +219,27 @@ class GlobeRenderer(
                 seg(cell(ax + (bx - ax) * j / 16 - 0.5f, ay + (by - ay) * j / 16 - 0.5f), cell(ax + (bx - ax) * (j + 1) / 16 - 0.5f, ay + (by - ay) * (j + 1) / 16 - 0.5f), c)
             }
         }
-        for (p in f.peers) box(p.region, floatArrayOf(0.79f, 0.76f, 0.70f, 0.26f))
-        if (f.ownRegion >= 0) box(f.ownRegion, floatArrayOf(0.85f, 0.66f, 0.36f, 0.6f))
+        for (p in f.peers) box(p.region, rgba(Charte.GL_HAIRLINE_STRONG, 0.7f))
+        if (f.ownRegion >= 0) box(f.ownRegion, rgba(Charte.GL_BRASS, 0.75f))
         dynLines?.let { deleteBuffer(it.vb); deleteBuffer(it.ib) }
         dynLines = upload(v.toArray(), ix.toIntArray(), segs, FLOAT0, 0.9f)
 
         // settlements, groups, settlement areas (villages → cities)
         val pts = FloatList(8192)
         fun pt(xyz: FloatArray, c: FloatArray, sizeDp: Float, kind: Float, thick: Float) { pts.add(xyz[0], xyz[1], xyz[2], c[0], c[1], c[2], c[3], sizeDp * density, kind, thick) }
-        for (s in f.settlements) pt(cell(s.x.toFloat(), s.y.toFloat()), hsl(f.hues.getOrElse(s.lin) { 0 }.toFloat(), 0.55f, 0.62f, 1f), 5f, 2f, 0.4f)
+        for (s in f.settlements) pt(cell(s.x.toFloat(), s.y.toFloat()), lineage(f.hues.getOrElse(s.lin) { 0 }.toFloat(), 1f), 5f, 2f, 0.4f)
         val live = HashSet<Int>(); f.ownAgents.forEach { live += it[0] }; f.peers.forEach { p -> live += p.agents.keys }
         val agentDot = { x: Int, y: Int, lin: Int, pop: Int, alpha: Float ->
-            pt(cell(x.toFloat(), y.toFloat()), hsl(f.hues.getOrElse(lin) { 0 }.toFloat(), 0.6f, 0.66f, alpha), 2 * min(4f, 1 + sqrt(pop.toFloat()) * 0.2f), 0f, 0f)
+            pt(cell(x.toFloat(), y.toFloat()), lineage(f.hues.getOrElse(lin) { 0 }.toFloat(), alpha), 2 * min(4f, 1 + sqrt(pop.toFloat()) * 0.2f), 0f, 0f)
         }
         for (area in Urban.areas(f.agents.filter { it.id !in live && it.pop > 0 })) {
             val tier = area.pop / Config.CITY_SOULS
             if (tier == 0) { for (a in area.members) agentDot(a.x, a.y, a.lin, a.pop, 0.8f); continue }
             for (a in area.members) agentDot(a.x, a.y, a.lin, a.pop, 0.28f)
             val r = 3.4f + 1.8f * sqrt(tier.toFloat()); val at = cell(area.x, area.y); val h = f.hues.getOrElse(area.lin) { 0 }.toFloat()
-            pt(at, hsl(h, 0.6f, 0.68f, 0.9f), 2 * r, 0f, 0f)
+            pt(at, lineage(h, 0.9f), 2 * r, 0f, 0f)
             val rings = min(3, ceil(ln(tier + 1.0) / ln(2.0)).toInt())
-            for (i in 0 until rings) { val rr = r + 2.5f + i * 2.5f; pt(at, hsl(h, 0.6f, 0.68f, 0.35f), 2 * rr, 1f, 0.8f / rr) }
+            for (i in 0 until rings) { val rr = r + 2.5f + i * 2.5f; pt(at, lineage(h, 0.35f), 2 * rr, 1f, 0.8f / rr) }
         }
         for (p in f.peers) for (a in p.agents.values) if (a[4] > 0) agentDot(a[1], a[2], a[3], a[4], 0.9f)
         for (a in f.ownAgents) if (a[4] > 0) agentDot(a[1], a[2], a[3], a[4], 1f)
@@ -278,18 +279,29 @@ class GlobeRenderer(
     private fun drawText(year: Int, w: Int, h: Int) {
         if (year != textYear) {
             textYear = year
-            val brand = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.SERIF; textSize = 24 * density; color = 0xFFC9C2B2.toInt(); letterSpacing = 0.14f }
-            val small = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Typeface.SERIF; textSize = 14 * density; color = 0xFFC9C2B2.toInt(); letterSpacing = 0.08f }
-            val yt = yearText(year)
-            textW = (max(brand.measureText("drakar.tech"), small.measureText(yt)) + 4 * density).toInt()
-            textH = (48 * density).toInt()
-            val bmp = Bitmap.createBitmap(textW, textH, Bitmap.Config.ARGB_8888)
+            // the wordmark as the charte composes it: "drakar" in Inter Tight 800, a brass dot on the baseline, then
+            // "tech" in ink-muted; the year below in JetBrains Mono, slate
             val dp = density                                     // (inside Canvas.apply, `density` would be the canvas's)
-            Canvas(bmp).apply { drawText("drakar.tech", 0f, 24 * dp, brand); drawText(yt, 0f, 44 * dp, small) }
+            val brand = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Charte.display; textSize = 22 * dp; color = Charte.INK; letterSpacing = -0.03f }
+            val tld = Paint(brand).apply { color = Charte.INK_MUTED }
+            val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Charte.BRASS }
+            val small = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Charte.monoMedium; textSize = 14 * dp; color = Charte.SLATE }
+            val yt = yearText(year)
+            val wDrakar = brand.measureText("drakar"); val dotD = 6 * dp; val xTech = wDrakar + 3 * dp + dotD + 2 * dp
+            textW = (max(xTech + tld.measureText("tech"), small.measureText(yt)) + 4 * dp).toInt()
+            textH = (56 * dp).toInt()
+            val bmp = Bitmap.createBitmap(textW, textH, Bitmap.Config.ARGB_8888)
+            val base = 22 * dp
+            Canvas(bmp).apply {
+                drawText("drakar", 0f, base, brand)
+                drawCircle(wDrakar + 3 * dp + dotD / 2, base - dotD / 2, dotD / 2, dot)
+                drawText("tech", xTech, base, tld)
+                drawText(yt, 0f, 48 * dp, small)
+            }
             glBindTexture(GL_TEXTURE_2D, texText); texParams(GL_LINEAR, GL_CLAMP_TO_EDGE)
             GLUtils.texImage2D(GL_TEXTURE_2D, 0, bmp, 0); bmp.recycle()
         }
-        val x = 20 * density; val y = 56 * density                 // below the status bar
+        val x = 24 * density; val y = 56 * density                 // below the status bar
         val quadXY = floatArrayOf(x, y, 0f, 0f, x + textW, y, 1f, 0f, x, y + textH, 0f, 1f, x + textW, y + textH, 1f, 1f)
         text.use()
         val vb = genBuffer(); glBindBuffer(GL_ARRAY_BUFFER, vb); glBufferData(GL_ARRAY_BUFFER, 64, floats(quadXY), GL_STREAM_DRAW)
@@ -327,6 +339,9 @@ class GlobeRenderer(
         }
 
         /** CSS-like hsla → rgba (h in degrees) */
+        fun rgba(c: FloatArray, a: Float) = floatArrayOf(c[0], c[1], c[2], a)
+        /** a lineage keeps its hue, muted to sit with the charte */
+        fun lineage(h: Float, a: Float) = hsl(h, Charte.LINEAGE_S, Charte.LINEAGE_L, a)
         fun hsl(h: Float, s: Float, l: Float, a: Float): FloatArray {
             val c = (1 - abs(2 * l - 1)) * s; val hp = ((h % 360 + 360) % 360) / 60; val x = c * (1 - abs(hp % 2 - 1))
             val (r, g, b) = when { hp < 1 -> Triple(c, x, 0f); hp < 2 -> Triple(x, c, 0f); hp < 3 -> Triple(0f, c, x); hp < 4 -> Triple(0f, x, c); hp < 5 -> Triple(x, 0f, c); else -> Triple(c, 0f, x) }
