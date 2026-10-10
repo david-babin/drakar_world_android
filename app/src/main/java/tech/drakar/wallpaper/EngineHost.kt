@@ -34,7 +34,7 @@ class EngineHost(private val context: Context) {
         Log.i(TAG, "engine $version loaded")
     }
 
-    fun begin(unitJson: String): Int = eval("DrakarEngine.begin(" + JSONObject.quote(unitJson) + ")").toInt()
+    fun begin(unitJson: String): Int = eval("String(DrakarEngine.begin(" + JSONObject.quote(unitJson) + "))").toInt()   // results come back as strings only
     fun step(seasons: Int): JSONObject = JSONObject(eval("DrakarEngine.step($seasons)"))
     fun finish(): JSONObject = JSONObject(eval("DrakarEngine.finish()"))
 
