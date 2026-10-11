@@ -6,7 +6,7 @@ import org.junit.Test
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-/** the Earth data parsers on the real files (counts of the files in drakar_tech/assets/earth) */
+/** the Earth data parsers on the real files (counts of the files in drakar_world/assets/earth) */
 class EarthDataTest {
     private fun bytes(name: String) = javaClass.getResource("/$name")!!.readBytes()
 

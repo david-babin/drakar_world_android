@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * The world model against the server's own library: a snapshot and 40 deltas produced by drakar_tech's
+ * The world model against the server's own library: a snapshot and 40 deltas produced by drakar_world's
  * src/lib (world-fixture.json) must give the server's final state.
  */
 class WorldModelTest {

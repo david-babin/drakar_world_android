@@ -2,7 +2,7 @@
 
 The [world.drakar.tech](https://world.drakar.tech) world as a live wallpaper: the shared globe drawn natively (OpenGL ES 3),
 connected to the same server as the page, and — if you allow it — computing work units with the server's own
-engine. The protocol is the contract: [`drakar_tech/docs/protocol.md`](https://github.com/david-babin/drakar_tech/blob/main/docs/protocol.md).
+engine. The protocol is the contract: [`drakar_world/docs/protocol.md`](https://github.com/david-babin/drakar_world/blob/main/docs/protocol.md).
 
 ## Install
 
@@ -55,4 +55,4 @@ app/src/main/java/tech/drakar/wallpaper/
   the server's library and checks the hashes; `RenderDeviceTest` connects to world.drakar.tech, renders a live frame
   offscreen with the wallpaper's renderer and the frame is pushed to the `ci-screens` branch.
 
-Test fixtures come from `drakar_tech` (`src/lib`, `public/engine.js`): regenerate them when the rules change.
+Test fixtures come from `drakar_world` (`src/lib`, `public/engine.js`): regenerate them when the rules change.

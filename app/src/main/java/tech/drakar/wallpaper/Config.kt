@@ -1,6 +1,6 @@
 package tech.drakar.wallpaper
 
-/** Settings of the app: server, timings, rendering. The protocol is described in drakar_tech/docs/protocol.md. */
+/** Settings of the app: server, timings, rendering. The protocol is described in drakar_world/docs/protocol.md. */
 object Config {
     val SITE: String = BuildConfig.SITE
     val WS: String = SITE.replaceFirst("http", "ws") + "/ws"

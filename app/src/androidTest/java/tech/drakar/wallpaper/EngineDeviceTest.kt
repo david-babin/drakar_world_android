@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 
 /**
  * engine.js in Android's JavaScript sandbox must compute exactly what the server's library computes:
- * units and hashes produced by drakar_tech's src/lib (assets/units.json), engine.js from the same build.
+ * units and hashes produced by drakar_world's src/lib (assets/units.json), engine.js from the same build.
  */
 @RunWith(AndroidJUnit4::class)
 class EngineDeviceTest {
