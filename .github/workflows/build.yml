@@ -120,7 +120,7 @@ jobs:
         run: |
           echo "::notice title=frame::$(cat downloads.txt 2>/dev/null | tr '\n' ' ') · $(ls -la render.png 2>&1)"
           [ -f render.png ] || exit 0
-          git config user.name "drakar-ci"; git config user.email "ci@drakar.tech"
+          git config user.name "David BABIN"; git config user.email "david@drakar.tech"
           git fetch origin ci-screens || true
           git checkout --orphan screens && git rm -rfq . && cp render.png "render-${GITHUB_RUN_NUMBER}.png" && { [ ! -f settings.png ] || cp settings.png "settings-${GITHUB_RUN_NUMBER}.png"; } || true
           git add render-*.png settings-*.png 2>/dev/null; git add render-*.png && git commit -qm "frame of build ${GITHUB_RUN_NUMBER}" && git push -f origin HEAD:ci-screens
