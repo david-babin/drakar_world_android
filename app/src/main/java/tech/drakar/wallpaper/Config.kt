@@ -3,6 +3,7 @@ package tech.drakar.wallpaper
 /** Settings of the app: server, timings, rendering. The protocol is described in drakar_world/docs/protocol.md. */
 object Config {
     val SITE: String = BuildConfig.SITE
+    const val HOME = "https://drakar.tech"                 // the wordmark on the settings screen links back to it
     val WS: String = SITE.replaceFirst("http", "ws") + "/ws"
     val EARTH = listOf("terrain.bin", "base.png", "land.bin", "coasts.bin", "contours.bin")
     const val EARTH_REFRESH_MS = 7 * 86_400_000L       // Earth data is re-validated weekly (ETag)

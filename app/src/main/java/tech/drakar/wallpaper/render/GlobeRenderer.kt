@@ -206,8 +206,7 @@ class GlobeRenderer(
         for (r in f.routes) {
             val a = byId[r.a] ?: continue; val b = byId[r.b] ?: continue
             val age = min(1f, (tickNow - r.tick) / 600f)
-            // recent routes in brass, the others in slate
-            val c = if (age < 1f) rgba(Charte.GL_BRASS, 0.65f - 0.35f * age) else rgba(Charte.GL_SLATE, 0.38f)
+            val c = lineage(f.hues.getOrElse(r.lin) { 0 }.toFloat(), 0.18f + 0.3f * age, Charte.LINEAGE_ROUTE)
             val pts = geodesic(cell(a.x.toFloat(), a.y.toFloat()), cell(b.x.toFloat(), b.y.toFloat()), if (r.sea) 2 else 1)
             for (i in 0 until pts.size - 1) if (!r.sea || i % 2 == 0) seg(pts[i], pts[i + 1], c)
         }
@@ -227,19 +226,19 @@ class GlobeRenderer(
         // settlements, groups, settlement areas (villages → cities)
         val pts = FloatList(8192)
         fun pt(xyz: FloatArray, c: FloatArray, sizeDp: Float, kind: Float, thick: Float) { pts.add(xyz[0], xyz[1], xyz[2], c[0], c[1], c[2], c[3], sizeDp * density, kind, thick) }
-        for (s in f.settlements) pt(cell(s.x.toFloat(), s.y.toFloat()), lineage(f.hues.getOrElse(s.lin) { 0 }.toFloat(), 1f), 5f, 2f, 0.4f)
+        for (s in f.settlements) pt(cell(s.x.toFloat(), s.y.toFloat()), lineage(f.hues.getOrElse(s.lin) { 0 }.toFloat(), 1f, Charte.LINEAGE_SETTLEMENT), 5f, 2f, 0.4f)
         val live = HashSet<Int>(); f.ownAgents.forEach { live += it[0] }; f.peers.forEach { p -> live += p.agents.keys }
         val agentDot = { x: Int, y: Int, lin: Int, pop: Int, alpha: Float ->
-            pt(cell(x.toFloat(), y.toFloat()), lineage(f.hues.getOrElse(lin) { 0 }.toFloat(), alpha), 2 * min(4f, 1 + sqrt(pop.toFloat()) * 0.2f), 0f, 0f)
+            pt(cell(x.toFloat(), y.toFloat()), lineage(f.hues.getOrElse(lin) { 0 }.toFloat(), alpha, Charte.LINEAGE_GROUP), 2 * min(4f, 1 + sqrt(pop.toFloat()) * 0.2f), 0f, 0f)
         }
         for (area in Urban.areas(f.agents.filter { it.id !in live && it.pop > 0 })) {
             val tier = area.pop / Config.CITY_SOULS
             if (tier == 0) { for (a in area.members) agentDot(a.x, a.y, a.lin, a.pop, 0.8f); continue }
             for (a in area.members) agentDot(a.x, a.y, a.lin, a.pop, 0.28f)
             val r = 3.4f + 1.8f * sqrt(tier.toFloat()); val at = cell(area.x, area.y); val h = f.hues.getOrElse(area.lin) { 0 }.toFloat()
-            pt(at, lineage(h, 0.9f), 2 * r, 0f, 0f)
+            pt(at, lineage(h, 0.9f, Charte.LINEAGE_AREA), 2 * r, 0f, 0f)
             val rings = min(3, ceil(ln(tier + 1.0) / ln(2.0)).toInt())
-            for (i in 0 until rings) { val rr = r + 2.5f + i * 2.5f; pt(at, lineage(h, 0.35f), 2 * rr, 1f, 0.8f / rr) }
+            for (i in 0 until rings) { val rr = r + 2.5f + i * 2.5f; pt(at, lineage(h, 0.35f, Charte.LINEAGE_AREA), 2 * rr, 1f, 0.8f / rr) }
         }
         for (p in f.peers) for (a in p.agents.values) if (a[4] > 0) agentDot(a[1], a[2], a[3], a[4], 0.9f)
         for (a in f.ownAgents) if (a[4] > 0) agentDot(a[1], a[2], a[3], a[4], 1f)
@@ -279,23 +278,21 @@ class GlobeRenderer(
     private fun drawText(year: Int, w: Int, h: Int) {
         if (year != textYear) {
             textYear = year
-            // the wordmark as the charte composes it: "drakar" in Inter Tight 800, a brass dot on the baseline, then
-            // "tech" in ink-muted; the year below in JetBrains Mono, slate
+            // the wordmark as on drakar.tech: "drakar" in Inter Tight 800 and a brass dot on the baseline; the year
+            // below in JetBrains Mono, slate
             val dp = density                                     // (inside Canvas.apply, `density` would be the canvas's)
             val brand = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Charte.display; textSize = 22 * dp; color = Charte.INK; letterSpacing = -0.03f }
-            val tld = Paint(brand).apply { color = Charte.INK_MUTED }
             val dot = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Charte.BRASS }
             val small = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Charte.monoMedium; textSize = 14 * dp; color = Charte.SLATE }
             val yt = yearText(year)
-            val wDrakar = brand.measureText("drakar"); val dotD = 6 * dp; val xTech = wDrakar + 3 * dp + dotD + 2 * dp
-            textW = (max(xTech + tld.measureText("tech"), small.measureText(yt)) + 4 * dp).toInt()
+            val wDrakar = brand.measureText("drakar"); val dotD = 6 * dp
+            textW = (max(wDrakar + 3 * dp + dotD, small.measureText(yt)) + 4 * dp).toInt()
             textH = (56 * dp).toInt()
             val bmp = Bitmap.createBitmap(textW, textH, Bitmap.Config.ARGB_8888)
             val base = 22 * dp
             Canvas(bmp).apply {
                 drawText("drakar", 0f, base, brand)
                 drawCircle(wDrakar + 3 * dp + dotD / 2, base - dotD / 2, dotD / 2, dot)
-                drawText("tech", xTech, base, tld)
                 drawText(yt, 0f, 48 * dp, small)
             }
             glBindTexture(GL_TEXTURE_2D, texText); texParams(GL_LINEAR, GL_CLAMP_TO_EDGE)
@@ -340,8 +337,8 @@ class GlobeRenderer(
 
         /** CSS-like hsla → rgba (h in degrees) */
         fun rgba(c: FloatArray, a: Float) = floatArrayOf(c[0], c[1], c[2], a)
-        /** a lineage keeps its hue, muted to sit with the charte */
-        fun lineage(h: Float, a: Float) = hsl(h, Charte.LINEAGE_S, Charte.LINEAGE_L, a)
+        /** a lineage keeps its hue, in the bright original palette ([sl]: saturation and lightness, from Charte.LINEAGE_*) */
+        fun lineage(h: Float, a: Float, sl: FloatArray) = hsl(h, sl[0], sl[1], a)
         fun hsl(h: Float, s: Float, l: Float, a: Float): FloatArray {
             val c = (1 - abs(2 * l - 1)) * s; val hp = ((h % 360 + 360) % 360) / 60; val x = c * (1 - abs(hp % 2 - 1))
             val (r, g, b) = when { hp < 1 -> Triple(c, x, 0f); hp < 2 -> Triple(x, c, 0f); hp < 3 -> Triple(0f, c, x); hp < 4 -> Triple(0f, x, c); hp < 5 -> Triple(x, 0f, c); else -> Triple(c, 0f, x) }

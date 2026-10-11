@@ -9,12 +9,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.text.style.ReplacementSpan
 import android.util.TypedValue
 import android.view.Gravity
@@ -71,12 +71,16 @@ class SettingsActivity : Activity() {
             orientation = LinearLayout.VERTICAL; setBackgroundColor(Charte.SURFACE_100)
             setPadding(px(24), px(64), px(24), px(32))
         }
-        // wordmark: drakar • tech
-        val mark = SpannableStringBuilder("drakar tech").apply {
-            setSpan(DotSpan(8 * d, 4 * d, 3 * d), 6, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(ForegroundColorSpan(Charte.INK_MUTED), 7, 11, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        // wordmark as on drakar.tech: drakar + brass dot, a link back to it
+        val mark = SpannableStringBuilder("drakar ").apply {
+            setSpan(DotSpan(8 * d, 4 * d, 0f), 6, 7, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        col.addView(text(mark, 30f, 36f, Charte.INK, Charte.display).apply { letterSpacing = -0.035f })
+        col.addView(text(mark, 30f, 36f, Charte.INK, Charte.display).apply {
+            letterSpacing = -0.035f
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            isClickable = true; isFocusable = true; contentDescription = "drakar.tech"
+            setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Config.HOME))) }
+        })
         col.addView(text(getString(R.string.wallpaper_description), 16f, 26f, Charte.INK_MUTED, Charte.sans, top = 12))
 
         // primary action
