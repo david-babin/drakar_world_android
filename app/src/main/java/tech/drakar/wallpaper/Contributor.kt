@@ -48,7 +48,7 @@ class Contributor(
             if (System.currentTimeMillis() - started > Config.LEASE_STALE_MS || !link.ready) return false
             val r = engine.finish()
             val answer = link.ask(JSONObject().put("t", "result").put("result", r.getJSONObject("result")).put("hash", r.getString("hash"))
-                .put("ms", r.optInt("ms")).put("verify", m.optBoolean("verify")).put("engine", version)) ?: return false
+                .put("ms", r.optInt("ms")).put("engine", version)) ?: return false
             if (answer.optString("t") == "ack") { prefs.countUnit(); return true }
             answer.optString("engine").ifEmpty { null }?.let { wantedEngine = it }      // the server moved on: next unit with its engine
             Log.i(TAG, "refused: ${answer.optString("reason")}")
