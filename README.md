@@ -8,8 +8,9 @@ engine. The protocol is the contract: [`drakar_world/docs/protocol.md`](https://
 
 Every push to `main` builds the APK and publishes it as the **latest** release
 (`Releases → latest → drakar.apk`). Open it on the phone, allow the install, then in the app tap
-**Set as wallpaper**. Every build is signed with the same sideload key (`signing/`), so a new build installs over
-the previous one; a store release would need a private key kept out of the repository.
+**Set as wallpaper**. Every release is signed with the same private key, so a new build installs over the
+previous one. The key is not in the repository: the CI reads it from two secrets, `SIGNING_KEYSTORE_BASE64` (the
+PKCS12 keystore, base64) and `SIGNING_PASSWORD` (alias `drakar`). Without them a build still works, unsigned.
 
 ## What it does
 

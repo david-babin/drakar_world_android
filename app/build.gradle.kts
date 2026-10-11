@@ -21,20 +21,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // one fixed key for every build (sideloading: a new build installs over the previous one).
-    // Not a secret: a store release would use a private key kept out of the repository.
+    // the release key stays out of the repository: the CI writes it from its secrets and points SIGNING_KEYSTORE at
+    // it, with SIGNING_PASSWORD. Without them (a local build, a pull request from a fork) the release APK is left
+    // unsigned; debug builds use Android's debug key.
+    val keystore = System.getenv("SIGNING_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
     signingConfigs {
-        create("sideload") {
-            storeFile = rootProject.file("signing/sideload.jks")
-            storePassword = "drakar-sideload"; keyAlias = "drakar"; keyPassword = "drakar-sideload"
+        if (keystore != null) create("release") {
+            storeFile = keystore
+            storePassword = System.getenv("SIGNING_PASSWORD"); keyAlias = "drakar"; keyPassword = System.getenv("SIGNING_PASSWORD")
         }
     }
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("sideload")
+            if (keystore != null) signingConfig = signingConfigs.getByName("release")
         }
-        debug { signingConfig = signingConfigs.getByName("sideload") }
     }
     buildFeatures { buildConfig = true }
     compileOptions {

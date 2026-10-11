@@ -9,3 +9,7 @@ build/
 .cxx
 *.apk
 *.aab
+
+# signing keys never go in the repository (the CI gets the release key from its secrets)
+*.jks
+*.keystore

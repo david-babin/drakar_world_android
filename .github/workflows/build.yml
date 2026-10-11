@@ -24,8 +24,19 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v5
+      # main: the release key, from the repository's secrets (pull requests from forks get none: unsigned APK)
+      - name: Signing key
+        if: github.ref == 'refs/heads/main'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          [ -n "$KEYSTORE_BASE64" ] || { echo "::error title=signing::secret SIGNING_KEYSTORE_BASE64 is missing"; exit 1; }
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "SIGNING_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
       # the runner image ships the Android SDK (ANDROID_HOME); missing platforms are fetched by the build
       - name: Unit tests and APK
+        env:
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           set -o pipefail
           ./gradlew --no-daemon testDebugUnitTest assembleRelease 2>&1 | tee build.log
