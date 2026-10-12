@@ -17,7 +17,7 @@ class WorldModel {
     /** an immutable view for one frame */
     class Frame(
         val agents: List<Agent>, val settlements: List<Settlement>, val routes: List<Route>, val hues: IntArray,
-        val peers: List<Peer>, val ownRegion: Int, val ownAgents: List<IntArray>, val year: Int, val climate: Float,
+        val peers: List<Peer>, val ownRegion: Int, val ownAgents: List<IntArray>, val year: Int, val tick: Int, val climate: Float,
     )
 
     private val agents = LinkedHashMap<Int, Agent>()
@@ -35,7 +35,9 @@ class WorldModel {
     @Volatile var climate = 0f; private set
     @Volatile var online = 1; private set
 
-    val year: Int get() = synchronized(this) { if (regionTicks.isEmpty()) 0 else (regionTicks.sum().toDouble() / regionTicks.size / 4).toInt() }
+    // as on the page: the year of the most advanced region (no chronicle entry is dated after it), the tick of the least advanced
+    val year: Int get() = synchronized(this) { (regionTicks.maxOrNull() ?: 0) / 4 }
+    val tick: Int get() = synchronized(this) { regionTicks.minOrNull() ?: 0 }
     val agentCount: Int get() = synchronized(this) { agents.size }
     val settlementCount: Int get() = synchronized(this) { settlements.size }
     val routeCount: Int get() = synchronized(this) { routes.size }
@@ -108,7 +110,7 @@ class WorldModel {
         val now = System.currentTimeMillis()
         peers.entries.removeAll { now - it.value.at > Config.PEER_TTL_MS }
         Frame(agents.values.toList(), settlements.values.toList(), routes.toList(), hues.copyOf(),
-            peers.values.map { Peer(it.region, it.step, HashMap(it.agents), it.at) }, ownRegion, ownAgents, year, climate)
+            peers.values.map { Peer(it.region, it.step, HashMap(it.agents), it.at) }, ownRegion, ownAgents, year, tick, climate)
     }
 }
 

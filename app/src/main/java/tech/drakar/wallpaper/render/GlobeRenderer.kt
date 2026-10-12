@@ -202,7 +202,7 @@ class GlobeRenderer(
             val base = segs * 4; ix.addAll(listOf(base, base + 1, base + 2, base + 2, base + 1, base + 3)); segs++
         }
         val byId = f.settlements.associateBy { it.id }
-        val tickNow = f.year * 4
+        val tickNow = f.tick
         for (r in f.routes) {
             val a = byId[r.a] ?: continue; val b = byId[r.b] ?: continue
             val age = min(1f, (tickNow - r.tick) / 600f)
