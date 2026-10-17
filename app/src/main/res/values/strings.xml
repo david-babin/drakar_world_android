@@ -13,4 +13,8 @@
     <string name="status_idle">Not connected (the wallpaper connects while it is visible)</string>
     <string name="version">Version %1$s</string>
     <string name="year">Year %1$s</string>
+    <string name="privacy">Privacy</string>
+    <string name="terms">Terms</string>
+    <!-- the language asked of the legal pages on world.drakar.tech (?lang=), the same as this screen's -->
+    <string name="legal_lang">en</string>
 </resources>

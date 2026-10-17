@@ -26,7 +26,8 @@ import android.widget.TextView
 import java.text.NumberFormat
 
 /**
- * The app's only screen: set the wallpaper, choose when to compute, see the witness's sigil and what it did.
+ * The app's only screen: set the wallpaper, choose when to compute, see the witness's sigil and what it did, open
+ * the privacy and terms pages.
  * Styled after the drakar design system (Charte): 4 dp grid, captions in uppercase, figures in mono, one primary
  * button in marine, brass only for the wordmark dot.
  */
@@ -120,6 +121,20 @@ class SettingsActivity : Activity() {
 
         col.addView(rule(24))
         col.addView(text(getString(R.string.version, "${BuildConfig.VERSION_NAME} · ${BuildConfig.COMMIT}"), 12f, 16f, Charte.SLATE, Charte.mono, top = 16))
+
+        // the legal pages on world.drakar.tech, in the browser, in the language of this screen
+        val legal = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = px(4) }
+        }
+        fun legalLink(label: String, page: String) = TextView(this).apply {
+            text = label; setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f); typeface = Charte.sans; setTextColor(Charte.INK_MUTED)
+            setPadding(0, px(12), px(16), px(12)); isClickable = true; isFocusable = true
+            setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("${Config.SITE}/$page?lang=${getString(R.string.legal_lang)}"))) }
+        }
+        legal.addView(legalLink(getString(R.string.privacy), "confidentialite"))
+        legal.addView(legalLink(getString(R.string.terms), "conditions"))
+        col.addView(legal)
         setContentView(ScrollView(this).apply { setBackgroundColor(Charte.SURFACE_100); addView(col) })
     }
 

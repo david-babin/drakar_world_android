@@ -42,7 +42,7 @@ app/src/main/java/tech/drakar/wallpaper/
   EngineHost.kt        engine.js in androidx.javascriptengine
   Contributor.kt       lease → stepped engine (animated, progress relayed) → result
   ChargingWorker.kt    WorkManager job: charger + Wi-Fi
-  SettingsActivity.kt  the only screen
+  SettingsActivity.kt  the only screen: wallpaper, compute switches, sigil, links to the privacy and terms pages
   render/              EGL thread, shaders (ported from the page), globe renderer, settlement areas
 ```
 
