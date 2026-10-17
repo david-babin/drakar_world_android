@@ -1,4 +1,4 @@
-# drakar · Android live wallpaper
+# worlda · the drakar Android live wallpaper
 
 The [world.drakar.tech](https://world.drakar.tech) world as a live wallpaper: the shared globe drawn natively (OpenGL ES 3),
 connected to the same server as the page, and — if you allow it — computing work units with the server's own
